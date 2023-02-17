@@ -39,7 +39,7 @@ export default defineComponent({
   components: { AvatarUpload },
   emits: ["addStation"],
   setup(_, context) {
-    const form = ref<any>({
+    const form = ref({
       name: "A站",
       department: "南京水利科学研究院",
       lon: 121.203844,
@@ -51,7 +51,15 @@ export default defineComponent({
     const commit = async () => {
       const data = await addStation(form.value);
       if (data != null && (data as any).code === 0) {
-        context.emit("addStation", form.value);
+        context.emit("addStation", {
+          id: data.data,
+          name: form.value.name,
+          department: form.value.department,
+          lon: form.value.lon,
+          lat: form.value.lat,
+          description: form.value.description,
+          avatar: form.value.avatar,
+        });
       } else {
         context.emit("addStation", null);
       }

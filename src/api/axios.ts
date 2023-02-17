@@ -1,6 +1,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 
 import { notice } from "@/utils/commonUtil";
+import { Ref } from "vue";
 
 const requestList = new Set();
 
@@ -81,5 +82,16 @@ export const patch = (url: string, data?: any) => {
     url: url,
     data: data,
     method: "patch",
+  });
+};
+
+export const upload = (url: string, formData: FormData, progress: Ref) => {
+  return axiosInstance({
+    url: url,
+    data: formData,
+    method: "post",
+    onUploadProgress: (progressEvent) => {
+      progress.value = ((progressEvent.loaded / progressEvent.total) * 100) | 0;
+    },
   });
 };

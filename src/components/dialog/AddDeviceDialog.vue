@@ -1,159 +1,171 @@
 <template>
   <div>
-    <el-form label-position="right" label-width="100px" :model="form">
-      <el-form-item label="站点名">
+    <el-form label-position="right" label-width="70px" :model="form">
+      <el-form-item label="设备名">
         <el-input v-model="form.name" />
       </el-form-item>
-      <el-form-item label="监测内容">
-        <el-input v-model="form.theme" />
-      </el-form-item>
-      <el-form-item label="注册时间">
-        <el-input v-model="form.enrollTime" />
-      </el-form-item>
-      <el-form-item label="传输方式">
-        <el-select v-model="form.type" placeholder="Select">
-          <el-option
-            v-for="item in typeOptions"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
-          />
-        </el-select>
-      </el-form-item>
       <el-form-item label="经度">
-        <el-select v-model="form.lon" placeholder="Select">
-          <el-option
-            v-for="item in lonOptions"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
-          />
-        </el-select>
+        <el-input v-model="form.lon" />
       </el-form-item>
       <el-form-item label="纬度">
-        <el-select v-model="form.lat" placeholder="Select">
-          <el-option
-            v-for="item in latOptions"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
-          />
-        </el-select>
+        <el-input v-model="form.lat" />
       </el-form-item>
       <el-form-item label="所属站点">
         <el-select v-model="form.stationId" placeholder="Select">
           <el-option
-            v-for="item in stationOptions"
-            :key="item.value"
-            :label="item.label"
-            :value="item.value"
+            v-for="item in stationList"
+            :key="item.id"
+            :label="item.name"
+            :value="item.id"
           />
         </el-select>
       </el-form-item>
-      <el-form-item label="数据组织结构">
-        <el-input v-model="form.structure" />
-      </el-form-item>
-      <el-form-item label="api地址" v-if="form.type == 'api'">
+      <el-form-item label="设备描述">
         <el-input
-          v-model="form.address"
-          placeholder="api地址及相关的网络请求脚本"
+          v-model="form.description"
+          :rows="3"
+          type="textarea"
+          resize="none"
         />
       </el-form-item>
-      <el-form-item label="数据库类型" v-if="form.type == 'query'">
-        <el-input v-model="form.databaseType" placeholder="数据库类型及地址" />
+      <el-form-item label="设备照片">
+        <avatar-upload :pictureName="''" @upload="uploadHandle" />
       </el-form-item>
-      <el-form-item label="查询语句" v-if="form.type == 'query'">
-        <el-input v-model="form.databasesql" placeholder="数据库查询语句" />
+      <el-form-item label="配置文件">
+        <upload-package
+          class="file-upload"
+          @returnPackageName="returnPackageName"
+        />
       </el-form-item>
     </el-form>
-
-    <el-button type="primary" plain @click="commit">确定</el-button>
+    <div class="btn">
+      <el-button type="primary" plain @click="commit" :disabled="!checkResult"
+        >确定</el-button
+      >
+      <el-button
+        type="warning"
+        plain
+        class="check"
+        :disabled="configPackage == ''"
+        @click="checkClick"
+        >检验配置文件</el-button
+      >
+    </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from "vue";
+import { computed, defineComponent, ref } from "vue";
+import AvatarUpload from "@/components/upload/AvatarUpload.vue";
+import UploadPackage from "@/components/upload/UploadPackage.vue";
+import { uploadPicture, checkConfig, initDevice } from "@/api/request";
+import { notice } from "@/utils/commonUtil";
 export default defineComponent({
   emits: ["addDevice"],
-  setup(_, context) {
-    const stationOptions = [
-      {
-        label: "A站点",
-        value: "123456",
-      },
-    ];
-    const typeOptions = [
-      {
-        label: "定时推送",
-        value: "push",
-      },
-      {
-        label: "api获取",
-        value: "api",
-      },
-
-      {
-        label: "自行查询获取",
-        value: "query",
-      },
-    ];
-    const lonOptions = [
-      {
-        label: "121.239489",
-        value: "121.239489",
-      },
-      {
-        label: "121.155551",
-        value: "121.155551",
-      },
-      {
-        label: "121.178548",
-        value: "121.178548",
-      },
-    ];
-    const latOptions = [
-      {
-        label: "31.7434",
-        value: "31.7434",
-      },
-      {
-        label: "31.760103",
-        value: "31.760103",
-      },
-      {
-        label: "31.757156",
-        value: "31.757156",
-      },
-    ];
+  components: { AvatarUpload, UploadPackage },
+  props: {
+    stationList: {
+      type: Array,
+    },
+  },
+  setup(props, context) {
+    const checkResult = ref(false);
+    const configPackageName = ref("");
+    const stationList = computed(() => {
+      return props.stationList;
+    });
     const form = ref({
-      name: "A设备",
-      theme: "水位",
-      enrollTime: "2023-02-04",
-      type: "",
-      lon: "",
-      lat: "",
+      name: "b设备",
+      lon: 121.159033,
+      lat: 31.769616,
+      description: "",
       stationId: "",
-      structure: "",
-      address: "",
-      databaseType: "",
-      databasesql: "",
+      avatar: "",
     });
 
-    const commit = () => {
-      context.emit("addDevice", form.value);
+    const commit = async () => {
+      const jsonData = {
+        folderName: configPackageName.value,
+        name: form.value.name,
+        lon: form.value.lon,
+        lat: form.value.lat,
+        stationId: form.value.stationId,
+        description: form.value.description,
+        avatar: form.value.avatar,
+      };
+      const data = await initDevice(jsonData);
+      if (data != null && (data as any).code === 0) {
+        notice("success", "成功", "设备添加成功");
+        context.emit("addDevice", {
+          id: data.data,
+          name: form.value.name,
+          lon: form.value.lon,
+          lat: form.value.lat,
+          stationId: form.value.stationId,
+          description: form.value.description,
+          avatar: form.value.avatar,
+        });
+      } else {
+        notice("error", "失败", "设备添加失败");
+      }
+    };
+
+    const returnPackageName = (val: string) => {
+      configPackageName.value = val;
+      if (val === "") {
+        checkResult.value = false;
+      }
+    };
+
+    const uploadHandle = async (val: File) => {
+      const formData = new FormData();
+      formData.append("file", val);
+      const data = await uploadPicture(formData);
+      if (data != null && (data as any).code === 0) {
+        form.value.avatar = data.data;
+      }
+    };
+
+    const checkClick = async () => {
+      const data = await checkConfig({ folderName: configPackageName.value });
+      if (data != null && (data as any).code === 0) {
+        if (data.data === 0) {
+          checkResult.value = true;
+          notice("success", "成功", "配置文件初步检验成功");
+        } else {
+          checkResult.value = false;
+          notice("error", "失败", "配置文件检验失败");
+        }
+      }
     };
 
     return {
       form,
-      stationOptions,
-      typeOptions,
-      lonOptions,
-      latOptions,
       commit,
+      uploadHandle,
+      stationList,
+      returnPackageName,
+      configPackageName,
+      checkClick,
+      checkResult,
     };
   },
 });
 </script>
 
 <style lang="scss" scoped>
+.file-upload {
+  width: 100%;
+  height: 100px;
+}
+.btn {
+  margin-top: 20px;
+  height: 20px;
+  .el-button {
+    float: right;
+  }
+  .check {
+    margin-right: 10px;
+  }
+}
 </style>
