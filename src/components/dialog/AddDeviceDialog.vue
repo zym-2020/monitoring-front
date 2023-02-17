@@ -1,11 +1,6 @@
 <template>
   <div>
-    <el-form
-      label-position="right"
-      label-width="100px"
-      :model="form"
-      style="max-width: 460px"
-    >
+    <el-form label-position="right" label-width="100px" :model="form">
       <el-form-item label="站点名">
         <el-input v-model="form.name" />
       </el-form-item>

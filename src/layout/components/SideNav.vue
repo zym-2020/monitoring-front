@@ -1,7 +1,5 @@
 <template>
-  <div class="home">
-    首页
-  </div>
+  <div class="side"></div>
 </template>
 
 <script lang="ts">
@@ -11,3 +9,9 @@ export default defineComponent({
 });
 </script>
 
+<style lang="scss" scoped>
+.side {
+  width: 250px;
+  background: #21252b;
+}
+</style>

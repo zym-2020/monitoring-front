@@ -1,7 +1,5 @@
 <template>
-  <div class="home">
-    首页
-  </div>
+  <div class="header-tool"></div>
 </template>
 
 <script lang="ts">
@@ -11,3 +9,6 @@ export default defineComponent({
 });
 </script>
 
+<style lang="scss" scoped>
+
+</style>

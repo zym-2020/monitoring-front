@@ -1,23 +1,31 @@
 <template>
-  <div class="btn">
-    <el-button type="primary" plain @click="addStaionClick">添加站点</el-button>
-    <el-button type="primary" plain @click="addDeviceClick">添加设备</el-button>
-    <el-button type="primary" plain @click="exportClick">导出成文档</el-button>
-  </div>
-  <div class="container" ref="container"></div>
+  <div class="main">
+    <div class="btn">
+      <el-button type="primary" plain @click="addStaionClick"
+        >添加站点</el-button
+      >
+      <el-button type="primary" plain @click="addDeviceClick"
+        >添加设备</el-button
+      >
+      <el-button type="primary" plain @click="exportClick"
+        >导出成文档</el-button
+      >
+    </div>
+    <div class="container" ref="container"></div>
 
-  <el-dialog v-model="stationDialogVisible" width="30%">
-    <add-station-dialog @addStation="addStation" />
-  </el-dialog>
-  <el-dialog v-model="deviceDialogVisible" width="30%">
-    <add-device-dialog @addDevice="addDevice" />
-  </el-dialog>
+    <el-dialog v-model="stationDialogVisible" :width="500">
+      <add-station-dialog @addStation="addStation" />
+    </el-dialog>
+    <el-dialog v-model="deviceDialogVisible" width="30%">
+      <add-device-dialog @addDevice="addDevice" />
+    </el-dialog>
+  </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref } from "vue";
-import AddStationDialog from "@/components/AddStationDialog.vue";
-import AddDeviceDialog from "@/components/AddDeviceDialog.vue";
+import { defineComponent, onMounted, ref } from "vue"; 
+import AddStationDialog from "@/components/dialog/AddStationDialog.vue";
+import AddDeviceDialog from "@/components/dialog/AddDeviceDialog.vue";
 import mapBoxGl from "mapbox-gl";
 
 export default defineComponent({
@@ -137,11 +145,18 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-.btn {
-  height: 50px;
-  line-height: 50px;
-}
-.container {
-  height: 800px;
+.main {
+  height: 100%;
+  .btn {
+    height: 60px;
+    line-height: 60px;
+    background: white;
+    border-radius: 6px;
+    margin-bottom: 20px;
+    padding-left: 40px;
+  }
+  .container {
+    height: calc(100% - 80px);
+  }
 }
 </style>
